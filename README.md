@@ -10,7 +10,13 @@ npm run dev     # lokal starten
 npm run build   # Produktions-Build prüfen
 ```
 
-Gebaut mit React, Vite und Tailwind CSS.
+Gebaut mit React, Vite, Tailwind CSS und Supabase.
+
+## Supabase einrichten
+
+1. Projekt-URL und Publishable Key als Umgebungsvariablen setzen: `VITE_SUPABASE_URL` und `VITE_SUPABASE_ANON_KEY`. Lokal stehen sie in `.env.local`, das nicht ins Repo kommt.
+2. `supabase/schema.sql` einmal im SQL Editor ausführen. Die Tabelle heißt `creator_profiles`.
+3. Nach dem ersten Anmelden das eigene Konto mit `supabase/make-operator.sql` zum Betreiber machen.
 
 ## Festgelegte Regeln
 
@@ -20,12 +26,14 @@ Gebaut mit React, Vite und Tailwind CSS.
 - **Gesamt-Level des Pros:** einfacher Durchschnitt der sechs Oberkategorien.
 - **Level-Kurve:** Die Gesamt-XP bis Level n sind n³ (Pokémon „mittel-schnell“). Kein Maximum.
 - **Anzeige:** Durchschnittswerte werden abgerundet angezeigt.
+- **Rollen:** Spieler sehen nur ihr eigenes Profil. Betreiber sehen alle Profile.
 
 ## Noch offen
 
-- Login mit E-Mail und Passwort. Braucht ein Supabase-Projekt, daher kommt es in einem späteren Schritt.
+- XP und Attribute werden noch nicht in der Datenbank gespeichert. Die Profilseite zeigt weiter Beispieldaten.
 - Aufgaben, Ziele, Einreichungen, Bestenliste, Benachrichtigungen, Sprache (Deutsch und Englisch).
 - Geld, Marken, Abo und Spielstats aus Matches: spätere Versionen.
+- Vor dem echten Start: E-Mail-Bestätigung wieder einschalten.
 
 ## Offene rechtliche Punkte
 

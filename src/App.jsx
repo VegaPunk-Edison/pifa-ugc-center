@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import AuthView from './components/AuthView.jsx';
+import OperatorView from './components/OperatorView.jsx';
 import ProfileView from './components/ProfileView.jsx';
 import { MOCK_PLAYER } from './data/mockPlayer.js';
+import { loadOrCreateProfile } from './lib/profiles.js';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
 
 function SessionBar({ email }) {
@@ -19,6 +21,8 @@ function SessionBar({ email }) {
 export default function App() {
   const [session, setSession] = useState(null);
   const [checking, setChecking] = useState(isSupabaseConfigured);
+  const [profile, setProfile] = useState(null);
+  const [profileError, setProfileError] = useState('');
 
   useEffect(() => {
     if (!supabase) return undefined;
@@ -31,6 +35,13 @@ export default function App() {
     });
     return () => listener.subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!session) return;
+    loadOrCreateProfile(session.user)
+      .then(setProfile)
+      .catch((err) => setProfileError(err.message));
+  }, [session]);
 
   if (!isSupabaseConfigured) {
     return (
@@ -48,10 +59,27 @@ export default function App() {
     return <AuthView />;
   }
 
+  if (profileError) {
+    return (
+      <>
+        <SessionBar email={session.user.email} />
+        <p className="p-6 text-center text-sm text-red-400">Das Profil konnte nicht geladen werden: {profileError}</p>
+      </>
+    );
+  }
+
+  if (!profile) {
+    return <p className="p-6 text-center text-sm text-slate-500">Lädt…</p>;
+  }
+
   return (
     <>
       <SessionBar email={session.user.email} />
-      <ProfileView player={MOCK_PLAYER} />
+      {profile.role === 'operator' ? (
+        <OperatorView />
+      ) : (
+        <ProfileView player={{ ...MOCK_PLAYER, name: profile.display_name }} />
+      )}
     </>
   );
 }
