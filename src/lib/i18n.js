@@ -371,6 +371,19 @@ Object.assign(DICT.en, {
   'info.tapHint': 'Tap for player info',
 });
 
+Object.assign(DICT.de, {
+  'tabs.info': 'Spielerinfos',
+  'tabs.tasks': 'Ziele und Aufgaben',
+  'tabs.social': 'Social Media',
+  'social.metricsSoon': 'Metriken für den Vergleich kommen in einer späteren Version.',
+});
+Object.assign(DICT.en, {
+  'tabs.info': 'Player info',
+  'tabs.tasks': 'Goals and tasks',
+  'tabs.social': 'Social media',
+  'social.metricsSoon': 'Metrics for comparison come in a later version.',
+});
+
 let current = 'de';
 try {
   const saved = localStorage.getItem(STORAGE_KEY);

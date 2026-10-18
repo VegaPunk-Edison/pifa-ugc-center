@@ -153,10 +153,8 @@ export default function App() {
           channels: { tiktok: profile.tiktok_url, instagram: profile.instagram_url, youtube: profile.youtube_url },
         }}
         onSave={saveProfile}
+        tasks={<TaskBoard profile={profile} level={level} />}
       />
-      <div className="mx-auto max-w-3xl px-4 pb-10">
-        <TaskBoard profile={profile} level={level} />
-      </div>
     </>
   );
 }
