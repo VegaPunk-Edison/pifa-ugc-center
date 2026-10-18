@@ -346,6 +346,7 @@ export default function ProfileView({ player, onSave, tasks }) {
   const [inDetail, setInDetail] = useState(false);
   const profile = buildProfile(player.xp);
   const level = Math.floor(profile.overall);
+  const rank = rankForLevel(level);
   const openCategory = profile.categories.find((category) => category.key === openKey);
 
   if (inDetail) {
@@ -381,7 +382,9 @@ export default function ProfileView({ player, onSave, tasks }) {
             <p className="text-xs uppercase tracking-widest text-slate-500">eSports Athlete Center</p>
             <button type="button" onClick={() => setInDetail(true)} className="mt-1 block max-w-full text-left">
               <span className="block break-words text-2xl font-bold">{player.name}</span>
-              <span className="block text-sm font-semibold text-emerald-300">{rankForLevel(level).name}</span>
+              <span className="block text-sm font-semibold" style={{ color: rank.color }}>
+                {rank.name}
+              </span>
             </button>
           </div>
           <div className="text-right">
