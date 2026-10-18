@@ -41,7 +41,7 @@ const DICT = {
     'profile.categories': 'Oberkategorien',
     'profile.attributes': 'Attribute',
     'profile.other': 'Sonstige',
-    'profile.flowsInto': 'fließt in {target}',
+    'profile.flowsInto': 'nur Anzeige, gehört zu {target}',
     'profile.weight': 'Gewicht {weight}',
     'profile.level': 'Lv {level}',
     'profile.footer': 'Inoffizielles Fan-Projekt, nicht mit EA verbunden.',
@@ -170,7 +170,7 @@ const DICT = {
     'profile.categories': 'Categories',
     'profile.attributes': 'Attributes',
     'profile.other': 'Other',
-    'profile.flowsInto': 'counts toward {target}',
+    'profile.flowsInto': 'display only, belongs to {target}',
     'profile.weight': 'Weight {weight}',
     'profile.level': 'Lv {level}',
     'profile.footer': 'Unofficial fan project, not affiliated with EA.',
@@ -306,6 +306,54 @@ Object.assign(DICT.en, {
   'legal.back': '← Back to the app',
   'legal.updated': 'Last updated: {date}',
   'legal.registerNote': 'By signing up you confirm that you are at least 16 and accept our:',
+});
+
+Object.assign(DICT.de, {
+  'profile.rename': 'Name ändern',
+  'profile.renameSave': 'Speichern',
+  'profile.renameCancel': 'Abbrechen',
+  'profile.nameHint': 'Der Name braucht 1 bis 30 Zeichen.',
+  'profile.nameError': 'Der Name konnte nicht gespeichert werden: {message}',
+  'profile.back': '← Zurück zur Übersicht',
+});
+Object.assign(DICT.en, {
+  'profile.rename': 'Change name',
+  'profile.renameSave': 'Save',
+  'profile.renameCancel': 'Cancel',
+  'profile.nameHint': 'The name needs 1 to 30 characters.',
+  'profile.nameError': 'The name could not be saved: {message}',
+  'profile.back': '← Back to overview',
+});
+
+Object.assign(DICT.de, {
+  'info.heading': 'Spielerinfos',
+  'info.rank': 'Rang',
+  'info.bounty': 'Kopfgeld',
+  'info.amount': '{amount} Mauzbits',
+  'info.language': 'Sprache',
+  'info.memberSince': 'Mitglied seit',
+  'info.none': 'nicht verknüpft',
+  'ach.heading': 'Erfolge',
+  'ach.account': 'Account angelegt',
+  'ach.firstTask': 'Erste Aufgabe erledigt',
+  'ach.firstGoal': 'Erstes Ziel erledigt',
+  'ach.done': 'Erreicht',
+  'ach.open': 'Offen',
+});
+Object.assign(DICT.en, {
+  'info.heading': 'Player info',
+  'info.rank': 'Rank',
+  'info.bounty': 'Bounty',
+  'info.amount': '{amount} Mauzbits',
+  'info.language': 'Language',
+  'info.memberSince': 'Member since',
+  'info.none': 'not linked',
+  'ach.heading': 'Achievements',
+  'ach.account': 'Account created',
+  'ach.firstTask': 'First task completed',
+  'ach.firstGoal': 'First goal completed',
+  'ach.done': 'Earned',
+  'ach.open': 'Open',
 });
 
 let current = 'de';

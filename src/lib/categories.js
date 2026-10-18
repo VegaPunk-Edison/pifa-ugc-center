@@ -75,7 +75,7 @@ export const CATEGORIES = [
   },
 ];
 
-// Sonstige Attribute: werden separat angezeigt, zählen aber bei ihrer Oberkategorie mit.
+// Sonstige Attribute: werden nur angezeigt und zählen nicht in den Durchschnitt ihrer Oberkategorie.
 export const SONSTIGE = [
   { key: 'spezialbewegung', name: 'Spezialbewegung', category: 'dri', weight: 2 },
   { key: 'schwacher_fuss', name: 'Schwacher Fuß', category: 'phy', weight: 1 },

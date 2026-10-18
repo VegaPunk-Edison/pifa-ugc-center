@@ -7,7 +7,7 @@ import ProfileView from './components/ProfileView.jsx';
 import TaskAdmin from './components/TaskAdmin.jsx';
 import TaskBoard from './components/TaskBoard.jsx';
 import { setLang, t, useLang } from './lib/i18n.js';
-import { loadOrCreateProfile, updateLanguage } from './lib/profiles.js';
+import { loadAchievementFacts, loadOrCreateProfile, updateDisplayName, updateLanguage } from './lib/profiles.js';
 import { listXpEvents, sumXpByKey } from './lib/submissions.js';
 import { buildProfile } from './lib/profile.js';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
@@ -34,6 +34,7 @@ export default function App() {
   const [profile, setProfile] = useState(null);
   const [profileError, setProfileError] = useState('');
   const [xp, setXp] = useState(null);
+  const [facts, setFacts] = useState(null);
 
   useEffect(() => {
     if (!supabase) return undefined;
@@ -68,8 +69,11 @@ export default function App() {
 
   useEffect(() => {
     if (!profileId || !isPlayer) return;
-    listXpEvents(profileId)
-      .then((events) => setXp(sumXpByKey(events)))
+    Promise.all([listXpEvents(profileId), loadAchievementFacts(profileId)])
+      .then(([events, loadedFacts]) => {
+        setXp(sumXpByKey(events));
+        setFacts(loadedFacts);
+      })
       .catch((err) => setProfileError(err.message));
   }, [profileId, isPlayer]);
 
@@ -82,6 +86,9 @@ export default function App() {
         // Die Sprache bleibt im Browser gespeichert, auch wenn das Speichern im Profil nicht klappt.
       });
   };
+
+  const renameProfile = (name) =>
+    updateDisplayName(profile.id, name).then((saved) => setProfile({ ...profile, display_name: saved.display_name }));
 
   if (!isSupabaseConfigured) {
     return (
@@ -133,7 +140,17 @@ export default function App() {
   return (
     <>
       <SessionBar email={session.user.email} onLanguageChange={changeLanguage} />
-      <ProfileView player={{ name: profile.display_name, xp }} />
+      <ProfileView
+        player={{
+          name: profile.display_name,
+          xp,
+          facts,
+          createdAt: profile.created_at,
+          language: profile.language,
+          channels: { tiktok: profile.tiktok_url, instagram: profile.instagram_url, youtube: profile.youtube_url },
+        }}
+        onRename={renameProfile}
+      />
       <div className="mx-auto max-w-3xl px-4 pb-10">
         <TaskBoard profile={profile} level={level} onProfileChange={setProfile} />
       </div>
