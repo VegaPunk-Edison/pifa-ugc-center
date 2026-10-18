@@ -389,7 +389,9 @@ export default function ProfileView({ player, onSave, tasks }) {
           </div>
           <div className="text-right">
             <p className="text-xs uppercase tracking-widest text-slate-500">{t('profile.overall')}</p>
-            <p className="text-4xl font-black text-emerald-300">{level}</p>
+            <p className="text-4xl font-black" style={{ color: rank.color }}>
+              {level}
+            </p>
           </div>
         </div>
       </header>
