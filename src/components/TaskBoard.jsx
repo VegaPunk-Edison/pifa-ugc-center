@@ -1,15 +1,13 @@
 import { useEffect, useState } from 'react';
 import { categoryAbbr, formatDue, isOverdue, listGoals, listTasks } from '../lib/tasks.js';
 import { t } from '../lib/i18n.js';
-import { PLATFORMS, isValidChannel, platformByKey } from '../lib/platforms.js';
+import { PLATFORMS, platformByKey } from '../lib/platforms.js';
 import {
   checkPostUrl,
   listMySubmissions,
   listUnreadNotifications,
   markNotificationsRead,
-  normalizeChannel,
   submitForTask,
-  updateChannels,
 } from '../lib/submissions.js';
 
 const INPUT = 'mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100';
@@ -49,66 +47,6 @@ function News({ items, onRead }) {
         ))}
       </ul>
     </section>
-  );
-}
-
-function ChannelsForm({ profile, level, onSaved }) {
-  const [values, setValues] = useState(() =>
-    Object.fromEntries(PLATFORMS.map((p) => [p.key, profile[p.channelField] ?? ''])),
-  );
-  const [error, setError] = useState('');
-  const [info, setInfo] = useState('');
-
-  const submit = async (event) => {
-    event.preventDefault();
-    const unlocked = PLATFORMS.filter((p) => level >= p.unlockLevel);
-    for (const p of unlocked) {
-      const value = values[p.key].trim();
-      if (value && !isValidChannel(p, value)) {
-        setError(t('board.channelInvalid', { example: p.channelPlaceholder }));
-        return;
-      }
-    }
-    const updates = Object.fromEntries(
-      unlocked.map((p) => [p.channelField, values[p.key].trim() ? normalizeChannel(values[p.key]) : null]),
-    );
-    try {
-      await updateChannels(profile.id, updates);
-      setError('');
-      setInfo(t('board.channelSaved'));
-      onSaved(updates);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  return (
-    <form onSubmit={submit} className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900 p-4">
-      {PLATFORMS.map((p) => {
-        const locked = level < p.unlockLevel;
-        return (
-          <label key={p.key} className="block text-sm text-slate-400">
-            {t('board.channelOf', { platform: p.label })}
-            {locked && <span className="ml-2 text-xs text-slate-600">{t('board.unlockAt', { level: p.unlockLevel })}</span>}
-            <input
-              value={values[p.key]}
-              disabled={locked}
-              placeholder={p.channelPlaceholder}
-              onChange={(e) => {
-                setValues((prev) => ({ ...prev, [p.key]: e.target.value }));
-                setInfo('');
-              }}
-              className={INPUT + (locked ? ' opacity-40' : '')}
-            />
-          </label>
-        );
-      })}
-      {error && <p className="text-sm text-red-400">{error}</p>}
-      {info && <p className="text-sm text-emerald-300">{info}</p>}
-      <button type="submit" className={BUTTON}>
-        {t('board.channelSave')}
-      </button>
-    </form>
   );
 }
 
@@ -187,7 +125,7 @@ function TaskStatus({ submission }) {
   );
 }
 
-export default function TaskBoard({ profile, level, onProfileChange }) {
+export default function TaskBoard({ profile, level }) {
   const [tasks, setTasks] = useState(null);
   const [goals, setGoals] = useState(null);
   const [submissions, setSubmissions] = useState([]);
@@ -225,15 +163,6 @@ export default function TaskBoard({ profile, level, onProfileChange }) {
   return (
     <div className="space-y-8">
       <News items={news} onRead={markRead} />
-
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500">{t('board.channel')}</h2>
-        <ChannelsForm
-          profile={profile}
-          level={level}
-          onSaved={(updates) => onProfileChange({ ...profile, ...updates })}
-        />
-      </section>
 
       <section>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-slate-500">{t('board.goals')}</h2>

@@ -26,10 +26,11 @@ export async function updateLanguage(userId, language) {
   if (error) throw error;
 }
 
-export async function updateDisplayName(userId, displayName) {
+// Speichert die Spielerinfos. Die Spalten sind per Grant freigegeben, die Rolle bleibt geschützt.
+export async function updateProfile(userId, fields) {
   const { data, error } = await supabase
     .from('creator_profiles')
-    .update({ display_name: displayName })
+    .update(fields)
     .eq('id', userId)
     .select(COLUMNS)
     .single();

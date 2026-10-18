@@ -274,7 +274,7 @@ Object.assign(DICT.de, {
   'board.platform': 'Plattform',
   'board.wrongPost': 'Der Link muss ein Beitrag oder Video dieser Plattform sein.',
   'board.submitLinkOf': 'Link zu deinem Beitrag',
-  'board.needChannelAny': 'Trage oben einen Kanal ein, um einzureichen.',
+  'board.needChannelAny': 'Trage deinen Kanal in den Spielerinfos ein, um einzureichen.',
   'board.channelInvalid': 'Bitte gib einen gültigen Kanal-Link ein, z. B. {example}',
   'review.channel': 'Kanal',
 });
@@ -284,7 +284,7 @@ Object.assign(DICT.en, {
   'board.platform': 'Platform',
   'board.wrongPost': 'The link must be a post or video from this platform.',
   'board.submitLinkOf': 'Link to your post',
-  'board.needChannelAny': 'Enter a channel above to submit.',
+  'board.needChannelAny': 'Add your channel in your player info to submit.',
   'board.channelInvalid': 'Please enter a valid channel link, e.g. {example}',
   'review.channel': 'Channel',
 });
@@ -354,6 +354,21 @@ Object.assign(DICT.en, {
   'ach.firstGoal': 'First goal completed',
   'ach.done': 'Earned',
   'ach.open': 'Open',
+});
+
+Object.assign(DICT.de, {
+  'info.name': 'Name',
+  'info.save': 'Speichern',
+  'info.saved': 'Gespeichert.',
+  'info.saveError': 'Die Angaben konnten nicht gespeichert werden: {message}',
+  'info.tapHint': 'Antippen für Spielerinfos',
+});
+Object.assign(DICT.en, {
+  'info.name': 'Name',
+  'info.save': 'Save',
+  'info.saved': 'Saved.',
+  'info.saveError': 'The details could not be saved: {message}',
+  'info.tapHint': 'Tap for player info',
 });
 
 let current = 'de';

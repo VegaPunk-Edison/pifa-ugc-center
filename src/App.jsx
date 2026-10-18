@@ -7,7 +7,7 @@ import ProfileView from './components/ProfileView.jsx';
 import TaskAdmin from './components/TaskAdmin.jsx';
 import TaskBoard from './components/TaskBoard.jsx';
 import { setLang, t, useLang } from './lib/i18n.js';
-import { loadAchievementFacts, loadOrCreateProfile, updateDisplayName, updateLanguage } from './lib/profiles.js';
+import { loadAchievementFacts, loadOrCreateProfile, updateLanguage, updateProfile } from './lib/profiles.js';
 import { listXpEvents, sumXpByKey } from './lib/submissions.js';
 import { buildProfile } from './lib/profile.js';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
@@ -87,8 +87,11 @@ export default function App() {
       });
   };
 
-  const renameProfile = (name) =>
-    updateDisplayName(profile.id, name).then((saved) => setProfile({ ...profile, display_name: saved.display_name }));
+  const saveProfile = (updates) =>
+    updateProfile(profile.id, updates).then((saved) => {
+      if (updates.language) setLang(updates.language);
+      setProfile({ ...profile, ...saved });
+    });
 
   if (!isSupabaseConfigured) {
     return (
@@ -149,10 +152,10 @@ export default function App() {
           language: profile.language,
           channels: { tiktok: profile.tiktok_url, instagram: profile.instagram_url, youtube: profile.youtube_url },
         }}
-        onRename={renameProfile}
+        onSave={saveProfile}
       />
       <div className="mx-auto max-w-3xl px-4 pb-10">
-        <TaskBoard profile={profile} level={level} onProfileChange={setProfile} />
+        <TaskBoard profile={profile} level={level} />
       </div>
     </>
   );

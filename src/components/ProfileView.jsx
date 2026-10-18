@@ -2,10 +2,14 @@ import { useState } from 'react';
 import { buildProfile } from '../lib/profile.js';
 import { achievementsFor } from '../lib/achievements.js';
 import { kopfgeldForLevel, rankForLevel } from '../lib/ranks.js';
+import { PLATFORMS, isValidChannel } from '../lib/platforms.js';
+import { normalizeChannel } from '../lib/submissions.js';
 import { LANGUAGES, getLang, t } from '../lib/i18n.js';
 
 const NAME_MAX = 30;
 const NO_FACTS = { approvedCount: 0, goalCount: 0 };
+const INPUT = 'mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100';
+const BUTTON = 'w-full rounded-lg bg-emerald-400 px-4 py-2 font-semibold text-slate-950 disabled:opacity-50';
 
 function LevelBar({ value, max }) {
   const percent = max ? Math.min(100, Math.round((value / max) * 100)) : 0;
@@ -43,27 +47,6 @@ function SubRow({ sub }) {
         <LevelBar value={sub.xpInLevel} max={sub.xpNeeded} />
       </div>
     </li>
-  );
-}
-
-function CategoryCard({ category }) {
-  const main = category.members.filter((m) => !m.sonstige);
-  return (
-    <section className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
-      <div className="flex items-baseline justify-between">
-        <h3 className="font-semibold">
-          {t(`cat.${category.key}`)} <span className="text-xs text-slate-500">{category.abbr}</span>
-        </h3>
-        <span className="text-lg font-bold text-emerald-300">
-          {t('profile.level', { level: Math.floor(category.average) })}
-        </span>
-      </div>
-      <ul className="mt-3 space-y-3">
-        {main.map((sub) => (
-          <SubRow key={sub.key} sub={sub} />
-        ))}
-      </ul>
-    </section>
   );
 }
 
@@ -111,74 +94,6 @@ function CategoryDetail({ category, onBack }) {
   );
 }
 
-function NameEditor({ name, onRename }) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(name);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-
-  const start = () => {
-    setDraft(name);
-    setError('');
-    setEditing(true);
-  };
-
-  const save = async (event) => {
-    event.preventDefault();
-    const trimmed = draft.trim();
-    if (!trimmed || trimmed.length > NAME_MAX) {
-      setError(t('profile.nameHint'));
-      return;
-    }
-    setSaving(true);
-    try {
-      await onRename(trimmed);
-      setEditing(false);
-    } catch (err) {
-      setError(t('profile.nameError', { message: err.message }));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (!editing) {
-    return (
-      <div className="mt-1 flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-bold">{name}</h1>
-        <button type="button" onClick={start} className="text-xs text-slate-400 underline">
-          {t('profile.rename')}
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <form onSubmit={save} className="mt-1 space-y-2">
-      <input
-        value={draft}
-        maxLength={NAME_MAX}
-        onChange={(e) => setDraft(e.target.value)}
-        aria-label={t('profile.rename')}
-        autoFocus
-        className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100"
-      />
-      <div className="flex items-center gap-3 text-sm">
-        <button
-          type="submit"
-          disabled={saving}
-          className="rounded-lg bg-emerald-400 px-3 py-1.5 font-semibold text-slate-950 disabled:opacity-50"
-        >
-          {t('profile.renameSave')}
-        </button>
-        <button type="button" onClick={() => setEditing(false)} className="text-slate-400 underline">
-          {t('profile.renameCancel')}
-        </button>
-      </div>
-      {error && <p className="text-xs text-red-400">{error}</p>}
-    </form>
-  );
-}
-
 function InfoRow({ label, children }) {
   return (
     <div className="flex items-baseline justify-between gap-4">
@@ -188,35 +103,110 @@ function InfoRow({ label, children }) {
   );
 }
 
-function PlayerInfo({ player, level }) {
+function PlayerInfoDetail({ player, level, onBack, onSave }) {
+  const [name, setName] = useState(player.name);
+  const [language, setLanguage] = useState(player.language);
+  const [channels, setChannels] = useState({
+    tiktok: player.channels.tiktok ?? '',
+    instagram: player.channels.instagram ?? '',
+    youtube: player.channels.youtube ?? '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
   const locale = getLang() === 'en' ? 'en-GB' : 'de-DE';
   const rank = rankForLevel(level);
   const bounty = kopfgeldForLevel(level);
-  const language = LANGUAGES.find((item) => item.code === player.language);
-  const channels = [
-    ['TikTok', player.channels.tiktok],
-    ['Instagram', player.channels.instagram],
-    ['YouTube', player.channels.youtube],
-  ];
+
+  const submit = async (event) => {
+    event.preventDefault();
+    const trimmed = name.trim();
+    if (!trimmed || trimmed.length > NAME_MAX) {
+      setError(t('profile.nameHint'));
+      return;
+    }
+    const unlocked = PLATFORMS.filter((p) => level >= p.unlockLevel);
+    for (const p of unlocked) {
+      const value = channels[p.key].trim();
+      if (value && !isValidChannel(p, value)) {
+        setError(t('board.channelInvalid', { example: p.channelPlaceholder }));
+        return;
+      }
+    }
+    const updates = { display_name: trimmed, language };
+    for (const p of unlocked) {
+      const value = channels[p.key].trim();
+      updates[p.channelField] = value ? normalizeChannel(value) : null;
+    }
+
+    setSaving(true);
+    setError('');
+    setInfo('');
+    try {
+      await onSave(updates);
+      setInfo(t('info.saved'));
+    } catch (err) {
+      setError(t('info.saveError', { message: err.message }));
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
-    <section className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-5">
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-slate-500">{t('info.heading')}</h2>
-      <div className="space-y-2 text-sm">
+    <section>
+      <button type="button" onClick={onBack} className="text-sm text-slate-400 underline">
+        {t('profile.back')}
+      </button>
+      <h2 className="mt-4 text-xl font-bold">{t('info.heading')}</h2>
+
+      <div className="mt-4 space-y-2 rounded-2xl border border-slate-800 bg-slate-900 p-5 text-sm">
         <InfoRow label={t('info.rank')}>{rank.name}</InfoRow>
         <InfoRow label={t('info.bounty')}>{t('info.amount', { amount: bounty.toLocaleString(locale) })}</InfoRow>
-        <InfoRow label={t('info.language')}>{language?.label}</InfoRow>
         <InfoRow label={t('info.memberSince')}>{new Date(player.createdAt).toLocaleDateString(locale)}</InfoRow>
-        {channels.map(([label, url]) => (
-          <InfoRow key={label} label={label}>
-            {url ? (
-              <span className="break-all">{url.replace(/^https?:\/\/(www\.)?/, '')}</span>
-            ) : (
-              <span className="text-slate-500">{t('info.none')}</span>
-            )}
-          </InfoRow>
-        ))}
       </div>
+
+      <form onSubmit={submit} className="mt-4 space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-5">
+        <label className="block text-sm text-slate-400">
+          {t('info.name')}
+          <input value={name} maxLength={NAME_MAX} onChange={(e) => setName(e.target.value)} className={INPUT} />
+        </label>
+
+        <label className="block text-sm text-slate-400">
+          {t('info.language')}
+          <select value={language} onChange={(e) => setLanguage(e.target.value)} className={INPUT}>
+            {LANGUAGES.map((item) => (
+              <option key={item.code} value={item.code}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {PLATFORMS.map((p) => {
+          const locked = level < p.unlockLevel;
+          return (
+            <label key={p.key} className="block text-sm text-slate-400">
+              {t('board.channelOf', { platform: p.label })}
+              {locked && (
+                <span className="ml-2 text-xs text-slate-600">{t('board.unlockAt', { level: p.unlockLevel })}</span>
+              )}
+              <input
+                value={channels[p.key]}
+                disabled={locked}
+                placeholder={p.channelPlaceholder}
+                onChange={(e) => setChannels((prev) => ({ ...prev, [p.key]: e.target.value }))}
+                className={INPUT + (locked ? ' opacity-40' : '')}
+              />
+            </label>
+          );
+        })}
+
+        {error && <p className="text-sm text-red-400">{error}</p>}
+        {info && <p className="text-sm text-emerald-300">{info}</p>}
+        <button type="submit" disabled={saving} className={BUTTON}>
+          {t('info.save')}
+        </button>
+      </form>
     </section>
   );
 }
@@ -241,7 +231,7 @@ function Achievements({ facts }) {
   );
 }
 
-export default function ProfileView({ player, onRename }) {
+export default function ProfileView({ player, onSave }) {
   const [openKey, setOpenKey] = useState(null);
   const profile = buildProfile(player.xp);
   const level = Math.floor(profile.overall);
@@ -249,6 +239,15 @@ export default function ProfileView({ player, onRename }) {
     category.members.filter((m) => m.sonstige).map((m) => ({ ...m, target: category.abbr })),
   );
   const openCategory = profile.categories.find((category) => category.key === openKey);
+
+  if (openKey === 'info') {
+    return (
+      <main className="mx-auto min-h-screen max-w-3xl px-4 py-6">
+        <PlayerInfoDetail player={player} level={level} onBack={() => setOpenKey(null)} onSave={onSave} />
+        <footer className="mt-8 text-center text-xs text-slate-600">{t('profile.footer')}</footer>
+      </main>
+    );
+  }
 
   if (openCategory) {
     return (
@@ -265,7 +264,10 @@ export default function ProfileView({ player, onRename }) {
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0 flex-1">
             <p className="text-xs uppercase tracking-widest text-slate-500">eSports Athlete Center</p>
-            <NameEditor name={player.name} onRename={onRename} />
+            <button type="button" onClick={() => setOpenKey('info')} className="mt-1 block max-w-full text-left">
+              <span className="block break-words text-2xl font-bold">{player.name}</span>
+              <span className="text-xs text-slate-500 underline">{t('info.tapHint')}</span>
+            </button>
           </div>
           <div className="text-right">
             <p className="text-xs uppercase tracking-widest text-slate-500">{t('profile.overall')}</p>
@@ -274,7 +276,6 @@ export default function ProfileView({ player, onRename }) {
         </div>
       </header>
 
-      <PlayerInfo player={player} level={level} />
       <Achievements facts={player.facts ?? NO_FACTS} />
 
       <section className="mt-6">
@@ -284,17 +285,6 @@ export default function ProfileView({ player, onRename }) {
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
           {profile.categories.map((category) => (
             <CategoryTile key={category.key} category={category} onOpen={setOpenKey} />
-          ))}
-        </div>
-      </section>
-
-      <section className="mt-6">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-slate-500">
-          {t('profile.attributes')}
-        </h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {profile.categories.map((category) => (
-            <CategoryCard key={category.key} category={category} />
           ))}
         </div>
       </section>
