@@ -289,6 +289,25 @@ Object.assign(DICT.en, {
   'review.channel': 'Channel',
 });
 
+Object.assign(DICT.de, {
+  'legal.imprint': 'Impressum',
+  'legal.privacy': 'Datenschutz',
+  'legal.privacyFull': 'Datenschutzerklärung',
+  'legal.terms': 'Nutzungsbedingungen',
+  'legal.back': '← Zurück zur App',
+  'legal.updated': 'Stand: {date}',
+  'legal.registerNote': 'Mit der Registrierung bestätigst du, dass du mindestens 16 Jahre alt bist, und akzeptierst unsere:',
+});
+Object.assign(DICT.en, {
+  'legal.imprint': 'Imprint',
+  'legal.privacy': 'Privacy',
+  'legal.privacyFull': 'Privacy policy',
+  'legal.terms': 'Terms',
+  'legal.back': '← Back to the app',
+  'legal.updated': 'Last updated: {date}',
+  'legal.registerNote': 'By signing up you confirm that you are at least 16 and accept our:',
+});
+
 let current = 'de';
 try {
   const saved = localStorage.getItem(STORAGE_KEY);

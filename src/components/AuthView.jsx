@@ -121,6 +121,19 @@ export default function AuthView() {
             </button>
           )}
         </div>
+        {mode === 'register' && (
+          <p className="mt-4 text-center text-xs text-slate-500">
+            {t('legal.registerNote')}
+            <br />
+            <a href="/nutzungsbedingungen" className="underline">
+              {t('legal.terms')}
+            </a>
+            {' · '}
+            <a href="/datenschutz" className="underline">
+              {t('legal.privacyFull')}
+            </a>
+          </p>
+        )}
       </div>
     </main>
   );
