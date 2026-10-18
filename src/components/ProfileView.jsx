@@ -23,14 +23,21 @@ function LevelBar({ value, max }) {
 }
 
 function CategoryTile({ category, onOpen }) {
+  const rank = rankForLevel(Math.floor(category.average));
   return (
     <button
       type="button"
       onClick={() => onOpen(category.key)}
-      className="rounded-2xl border border-slate-800 bg-slate-900 p-3 text-center transition hover:border-emerald-400/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+      style={{ '--rank': rank.color, borderColor: rank.color }}
+      className="rank-tile rounded-2xl border-2 bg-slate-900 p-3 text-center transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
     >
       <p className="text-xs font-semibold tracking-widest text-slate-500">{category.abbr}</p>
-      <p className="mt-1 text-2xl font-black text-emerald-300">{Math.floor(category.average)}</p>
+      <p className="mt-1 text-2xl font-black" style={{ color: rank.color }}>
+        {Math.floor(category.average)}
+      </p>
+      <p className="mt-1 text-xs font-semibold" style={{ color: rank.color }}>
+        {rank.name}
+      </p>
     </button>
   );
 }
@@ -53,6 +60,7 @@ function SubRow({ sub }) {
 }
 
 function CategoryDetail({ category, onBack }) {
+  const rank = rankForLevel(Math.floor(category.average));
   const main = category.members.filter((m) => !m.sonstige);
   const sonstige = category.members.filter((m) => m.sonstige);
 
@@ -66,9 +74,14 @@ function CategoryDetail({ category, onBack }) {
         <h2 className="text-xl font-bold">
           {t(`cat.${category.key}`)} <span className="text-sm text-slate-500">{category.abbr}</span>
         </h2>
-        <span className="text-2xl font-black text-emerald-300">
-          {t('profile.level', { level: Math.floor(category.average) })}
-        </span>
+        <div className="text-right">
+          <p className="text-2xl font-black" style={{ color: rank.color }}>
+            {t('profile.level', { level: Math.floor(category.average) })}
+          </p>
+          <p className="text-xs font-semibold" style={{ color: rank.color }}>
+            {rank.name}
+          </p>
+        </div>
       </div>
 
       <ul className="mt-4 space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-5">

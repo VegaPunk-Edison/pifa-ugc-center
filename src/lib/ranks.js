@@ -1,12 +1,13 @@
-// Ränge nach Gesamt-Level. Jede Stufe braucht einen größeren Abstand als die vorherige.
+// Ränge nach Level. Jede Stufe braucht einen größeren Abstand als die vorherige.
+// Die Farbe zeigt den Rang auf den Kategorie-Kacheln und in den Detailansichten.
 export const RANKS = [
-  { key: 'noob', name: 'Noob', from: 0 },
-  { key: 'amateur', name: 'Amateur', from: 10 },
-  { key: 'halbprofi', name: 'Halbprofi', from: 25 },
-  { key: 'profi', name: 'Profi', from: 45 },
-  { key: 'weltklasse', name: 'Weltklasse', from: 80 },
-  { key: 'legende', name: 'Legende', from: 130 },
-  { key: 'budokai', name: 'Budokai Tenkaichi', from: 200 },
+  { key: 'noob', name: 'Noob', from: 0, color: '#b87333' },
+  { key: 'amateur', name: 'Amateur', from: 10, color: '#c0c7d0' },
+  { key: 'halbprofi', name: 'Halbprofi', from: 25, color: '#facc15' },
+  { key: 'profi', name: 'Profi', from: 45, color: '#a5f3fc' },
+  { key: 'weltklasse', name: 'Weltklasse', from: 80, color: '#60a5fa' },
+  { key: 'legende', name: 'Legende', from: 130, color: '#c084fc' },
+  { key: 'budokai', name: 'Budokai Tenkaichi', from: 200, color: '#8c2a3e' },
 ];
 
 export function rankForLevel(level) {

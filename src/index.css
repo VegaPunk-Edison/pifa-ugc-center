@@ -5,3 +5,24 @@ body {
   color: #f1f5f9;
   margin: 0;
 }
+
+/* Ein leichter Schimmer um die Kategorie-Kacheln, in der Farbe ihres Rangs. */
+@keyframes rank-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    box-shadow: 0 0 14px 0 color-mix(in srgb, var(--rank) 55%, transparent);
+  }
+}
+
+.rank-tile {
+  animation: rank-glow 3.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rank-tile {
+    animation: none;
+  }
+}
