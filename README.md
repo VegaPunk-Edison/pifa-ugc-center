@@ -16,7 +16,7 @@ Gebaut mit React, Vite, Tailwind CSS und Supabase.
 
 1. Projekt-URL und Publishable Key als Umgebungsvariablen setzen: `VITE_SUPABASE_URL` und `VITE_SUPABASE_ANON_KEY`. Lokal stehen sie in `.env.local`, das nicht ins Repo kommt.
 2. Die SQL-Dateien in `supabase/` einmal im SQL Editor ausführen, in dieser Reihenfolge:
-   `schema.sql`, `tasks-schema.sql`, `submissions-schema.sql`, `step4-schema.sql`, `language-schema.sql`, `platforms-schema.sql`.
+   `schema.sql`, `tasks-schema.sql`, `submissions-schema.sql`, `fix-goal-and-category-keys.sql`, `step4-schema.sql`, `language-schema.sql`, `platforms-schema.sql`.
 3. Nach dem ersten Anmelden das eigene Konto mit `supabase/make-operator.sql` zum Betreiber machen.
 
 ## Festgelegte Regeln
