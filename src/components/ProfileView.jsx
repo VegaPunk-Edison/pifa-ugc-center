@@ -125,7 +125,7 @@ function Achievements({ facts }) {
   );
 }
 
-function InfoTab({ player, level, onSave, facts }) {
+function InfoTab({ player, level, onSave }) {
   const [name, setName] = useState(player.name);
   const [language, setLanguage] = useState(player.language);
   const [saving, setSaving] = useState(false);
@@ -184,7 +184,6 @@ function InfoTab({ player, level, onSave, facts }) {
         <InfoRow label={t('info.memberSince')}>{new Date(player.createdAt).toLocaleDateString(locale)}</InfoRow>
       </div>
 
-      <Achievements facts={facts} />
     </div>
   );
 }
@@ -277,6 +276,7 @@ function PlatformDetail({ platform, value, onBack, onSave }) {
 const TABS = [
   { key: 'info', label: 'tabs.info' },
   { key: 'tasks', label: 'tabs.tasks' },
+  { key: 'achievements', label: 'tabs.achievements' },
   { key: 'social', label: 'tabs.social' },
 ];
 
@@ -319,8 +319,9 @@ function PlayerDetail({ player, level, facts, tasks, onBack, onSave }) {
       </div>
 
       <div className="mt-4">
-        {tab === 'info' && <InfoTab player={player} level={level} facts={facts} onSave={onSave} />}
+        {tab === 'info' && <InfoTab player={player} level={level} onSave={onSave} />}
         {tab === 'tasks' && tasks}
+        {tab === 'achievements' && <Achievements facts={facts} />}
         {tab === 'social' && <SocialTab player={player} level={level} onOpen={setPlatformKey} />}
       </div>
     </section>
