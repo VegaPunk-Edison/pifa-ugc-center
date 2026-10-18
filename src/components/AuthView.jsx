@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase.js';
+import { t } from '../lib/i18n.js';
+import LangSwitch from './LangSwitch.jsx';
 
-const TEXT = {
-  login: { title: 'Anmelden', submit: 'Anmelden' },
-  register: { title: 'Registrieren', submit: 'Konto erstellen' },
-  reset: { title: 'Passwort zurücksetzen', submit: 'Link senden' },
-};
+const TITLES = { login: 'auth.login.title', register: 'auth.register.title', reset: 'auth.reset.title' };
+const SUBMITS = { login: 'auth.login.submit', register: 'auth.register.submit', reset: 'auth.reset.submit' };
 
 // Übersetzt die häufigsten Fehlermeldungen von Supabase.
 function describeError(error) {
-  if (error.message === 'Invalid login credentials') return 'E-Mail oder Passwort ist falsch.';
-  if (error.message === 'User already registered') return 'Zu dieser E-Mail gibt es schon ein Konto.';
-  return `Das hat nicht geklappt: ${error.message}`;
+  if (error.message === 'Invalid login credentials') return t('auth.errInvalid');
+  if (error.message === 'User already registered') return t('auth.errExists');
+  return t('auth.errGeneric', { message: error.message });
 }
 
 export default function AuthView() {
@@ -42,7 +41,7 @@ export default function AuthView() {
     if (mode === 'register') {
       const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
       if (signUpError) setError(describeError(signUpError));
-      else if (!data.session) setInfo('Wir haben dir eine E-Mail geschickt. Bitte bestätige sie, dann kannst du dich anmelden.');
+      else if (!data.session) setInfo(t('auth.infoConfirm'));
     }
 
     if (mode === 'reset') {
@@ -50,7 +49,7 @@ export default function AuthView() {
         redirectTo: window.location.origin,
       });
       if (resetError) setError(describeError(resetError));
-      else setInfo('Wenn es ein Konto zu dieser E-Mail gibt, bekommst du gleich einen Link.');
+      else setInfo(t('auth.infoReset'));
     }
 
     setBusy(false);
@@ -58,13 +57,16 @@ export default function AuthView() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-4 py-6">
+      <div className="mb-3 flex justify-end">
+        <LangSwitch />
+      </div>
       <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
         <p className="text-xs uppercase tracking-widest text-slate-500">eSports Athlete Center</p>
-        <h1 className="mt-1 text-2xl font-bold">{TEXT[mode].title}</h1>
+        <h1 className="mt-1 text-2xl font-bold">{t(TITLES[mode])}</h1>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <label className="block text-sm">
-            <span className="text-slate-400">E-Mail</span>
+            <span className="text-slate-400">{t('auth.email')}</span>
             <input
               type="email"
               required
@@ -77,7 +79,7 @@ export default function AuthView() {
 
           {mode !== 'reset' && (
             <label className="block text-sm">
-              <span className="text-slate-400">Passwort</span>
+              <span className="text-slate-400">{t('auth.password')}</span>
               <input
                 type="password"
                 required
@@ -98,24 +100,24 @@ export default function AuthView() {
             disabled={busy}
             className="w-full rounded-lg bg-emerald-400 px-4 py-2 font-semibold text-slate-950 disabled:opacity-50"
           >
-            {busy ? 'Einen Moment…' : TEXT[mode].submit}
+            {busy ? t('auth.busy') : t(SUBMITS[mode])}
           </button>
         </form>
 
         <div className="mt-6 space-y-2 text-center text-sm">
           {mode !== 'login' && (
             <button type="button" onClick={() => switchMode('login')} className="block w-full text-slate-400 underline">
-              Schon ein Konto? Anmelden
+              {t('auth.toLogin')}
             </button>
           )}
           {mode !== 'register' && (
             <button type="button" onClick={() => switchMode('register')} className="block w-full text-slate-400 underline">
-              Noch kein Konto? Registrieren
+              {t('auth.toRegister')}
             </button>
           )}
           {mode !== 'reset' && (
             <button type="button" onClick={() => switchMode('reset')} className="block w-full text-slate-400 underline">
-              Passwort vergessen?
+              {t('auth.toReset')}
             </button>
           )}
         </div>

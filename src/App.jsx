@@ -1,28 +1,39 @@
 import { useEffect, useState } from 'react';
 import AuthView from './components/AuthView.jsx';
-import OperatorView from './components/OperatorView.jsx';
+import Leaderboard from './components/Leaderboard.jsx';
+import LangSwitch from './components/LangSwitch.jsx';
+import PendingReview from './components/PendingReview.jsx';
 import ProfileView from './components/ProfileView.jsx';
-import { MOCK_PLAYER } from './data/mockPlayer.js';
-import { loadOrCreateProfile } from './lib/profiles.js';
+import TaskAdmin from './components/TaskAdmin.jsx';
+import TaskBoard from './components/TaskBoard.jsx';
+import { setLang, t, useLang } from './lib/i18n.js';
+import { loadOrCreateProfile, updateLanguage } from './lib/profiles.js';
+import { listXpEvents, sumXpByKey } from './lib/submissions.js';
+import { buildProfile } from './lib/profile.js';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
 
-function SessionBar({ email }) {
+function SessionBar({ email, onLanguageChange }) {
   const signOut = () => supabase.auth.signOut();
   return (
-    <div className="mx-auto flex max-w-3xl items-center justify-between px-4 pt-4 text-xs text-slate-500">
+    <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 pt-4 text-xs text-slate-500">
       <span>{email}</span>
-      <button type="button" onClick={signOut} className="underline">
-        Abmelden
-      </button>
+      <div className="flex items-center gap-3">
+        <LangSwitch onChange={onLanguageChange} />
+        <button type="button" onClick={signOut} className="underline">
+          {t('session.logout')}
+        </button>
+      </div>
     </div>
   );
 }
 
 export default function App() {
+  useLang();
   const [session, setSession] = useState(null);
   const [checking, setChecking] = useState(isSupabaseConfigured);
   const [profile, setProfile] = useState(null);
   const [profileError, setProfileError] = useState('');
+  const [xp, setXp] = useState(null);
 
   useEffect(() => {
     if (!supabase) return undefined;
@@ -37,22 +48,49 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!session) return;
+    if (!session) {
+      setProfile(null);
+      setXp(null);
+      return;
+    }
     loadOrCreateProfile(session.user)
-      .then(setProfile)
+      .then((loaded) => {
+        // Die im Profil gespeicherte Sprache hat Vorrang vor dem Browser.
+        setLang(loaded.language);
+        setProfile(loaded);
+      })
       .catch((err) => setProfileError(err.message));
   }, [session]);
 
+  const level = xp ? Math.floor(buildProfile(xp).overall) : 0;
+  const profileId = profile?.id;
+  const isPlayer = profile?.role === 'player';
+
+  useEffect(() => {
+    if (!profileId || !isPlayer) return;
+    listXpEvents(profileId)
+      .then((events) => setXp(sumXpByKey(events)))
+      .catch((err) => setProfileError(err.message));
+  }, [profileId, isPlayer]);
+
+  const changeLanguage = (lang) => {
+    setLang(lang);
+    if (!profile) return;
+    updateLanguage(profile.id, lang)
+      .then(() => setProfile({ ...profile, language: lang }))
+      .catch(() => {
+        // Die Sprache bleibt im Browser gespeichert, auch wenn das Speichern im Profil nicht klappt.
+      });
+  };
+
   if (!isSupabaseConfigured) {
     return (
-      <main className="mx-auto max-w-sm px-4 py-10 text-center text-sm text-slate-400">
-        Supabase ist noch nicht eingerichtet. Bitte VITE_SUPABASE_URL und VITE_SUPABASE_ANON_KEY setzen.
-      </main>
+      <main className="mx-auto max-w-sm px-4 py-10 text-center text-sm text-slate-400">{t('setup.missing')}</main>
     );
   }
 
   if (checking) {
-    return <p className="p-6 text-center text-sm text-slate-500">Lädt…</p>;
+    return <p className="p-6 text-center text-sm text-slate-500">{t('loading')}</p>;
   }
 
   if (!session) {
@@ -62,24 +100,43 @@ export default function App() {
   if (profileError) {
     return (
       <>
-        <SessionBar email={session.user.email} />
-        <p className="p-6 text-center text-sm text-red-400">Das Profil konnte nicht geladen werden: {profileError}</p>
+        <SessionBar email={session.user.email} onLanguageChange={changeLanguage} />
+        <p className="p-6 text-center text-sm text-red-400">{t('profile.loadError', { message: profileError })}</p>
       </>
     );
   }
 
   if (!profile) {
-    return <p className="p-6 text-center text-sm text-slate-500">Lädt…</p>;
+    return <p className="p-6 text-center text-sm text-slate-500">{t('loading')}</p>;
+  }
+
+  if (profile.role === 'operator') {
+    return (
+      <>
+        <SessionBar email={session.user.email} onLanguageChange={changeLanguage} />
+        <Leaderboard />
+        <PendingReview />
+        <TaskAdmin />
+      </>
+    );
+  }
+
+  if (!xp) {
+    return (
+      <>
+        <SessionBar email={session.user.email} onLanguageChange={changeLanguage} />
+        <p className="p-6 text-center text-sm text-slate-500">{t('loading')}</p>
+      </>
+    );
   }
 
   return (
     <>
-      <SessionBar email={session.user.email} />
-      {profile.role === 'operator' ? (
-        <OperatorView />
-      ) : (
-        <ProfileView player={{ ...MOCK_PLAYER, name: profile.display_name }} />
-      )}
+      <SessionBar email={session.user.email} onLanguageChange={changeLanguage} />
+      <ProfileView player={{ name: profile.display_name, xp }} />
+      <div className="mx-auto max-w-3xl px-4 pb-10">
+        <TaskBoard profile={profile} level={level} onProfileChange={setProfile} />
+      </div>
     </>
   );
 }
